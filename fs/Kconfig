@@ -225,6 +225,9 @@ source "fs/sysv/Kconfig"
 source "fs/ufs/Kconfig"
 source "fs/exofs/Kconfig"
 
+#add exfat
+source "fs/exfat/Kconfig"
+
 endif # MISC_FILESYSTEMS
 
 source "fs/exofs/Kconfig.ore"
