@@ -13,12 +13,14 @@
 #include <keys/user-type.h>
 #include <linux/random.h>
 #include <linux/scatterlist.h>
-#include <uapi/linux/keyctl.h>
+#include <linux/keyctl.h>
 #include <crypto/hash.h>
 #include <linux/f2fs_fs.h>
 
 #include "f2fs.h"
 #include "xattr.h"
+
+#define barrier_data(ptr) __asm__ __volatile__("": :"r"(ptr) :"memory")
 
 static void derive_crypt_complete(struct crypto_async_request *req, int rc)
 {
@@ -30,7 +32,11 @@ static void derive_crypt_complete(struct crypto_async_request *req, int rc)
 	ecr->res = rc;
 	complete(&ecr->completion);
 }
-
+static void memzero_explicit(void *s, size_t count)
+ {
+         memset(s, 0, count);
+         barrier_data(s);
+ }
 /**
  * f2fs_derive_key_aes() - Derive a key using AES-128-ECB
  * @deriving_key: Encryption key used for derivatio.
