@@ -227,6 +227,8 @@ source "fs/exofs/Kconfig"
 
 #add exfat
 source "fs/exfat/Kconfig"
+#add f2fs
+source "fs/f2fs/Kconfig"
 
 endif # MISC_FILESYSTEMS
 
