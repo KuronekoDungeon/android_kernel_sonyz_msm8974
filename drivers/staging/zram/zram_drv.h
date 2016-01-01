@@ -40,6 +40,9 @@ static const size_t max_zpage_size = PAGE_SIZE / 10 * 9;
  * always return failure.
  */
 
+/* Default zram disk size: 25% of total RAM */
+static const unsigned default_disksize_perc_ram = 25;
+
 /*-- End of configurable params */
 
 #define SECTOR_SHIFT		9
