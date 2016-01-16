@@ -198,6 +198,13 @@ sha512_update(struct shash_desc *desc, const u8 *data, unsigned int len)
 	return 0;
 }
 
+int
+crypto_sha512_update(struct shash_desc *desc, const u8 *data, unsigned int len)
+{
+    return sha512_update(desc, data, len);
+}
+EXPORT_SYMBOL(crypto_sha512_update);
+
 static int
 sha512_final(struct shash_desc *desc, u8 *hash)
 {
