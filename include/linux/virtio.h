@@ -305,4 +305,8 @@ struct virtio_driver {
 
 int register_virtio_driver(struct virtio_driver *drv);
 void unregister_virtio_driver(struct virtio_driver *drv);
+//FIXME
+unsigned virtqueue_enable_cb_prepare(struct virtqueue *vq);
+bool virtqueue_poll(struct virtqueue *vq, unsigned);
+
 #endif /* _LINUX_VIRTIO_H */
