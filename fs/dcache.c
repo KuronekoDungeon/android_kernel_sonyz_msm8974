@@ -1012,40 +1012,31 @@ void shrink_dcache_for_umount(struct super_block *sb)
 }
 
 /*
- * This tries to ascend one level of parenthood, but
- * we can race with renaming, so we need to re-check
- * the parenthood after dropping the lock and check
- * that the sequence number still matches.
- */
-static struct dentry *try_to_ascend(struct dentry *old, int locked, unsigned seq)
-{
-	struct dentry *new = old->d_parent;
-
-	rcu_read_lock();
-	spin_unlock(&old->d_lock);
-	spin_lock(&new->d_lock);
-
-	/*
-	 * might go back up the wrong parent if we have had a rename
-	 * or deletion
-	 */
-	if (new != old->d_parent ||
-		 (old->d_flags & DCACHE_DISCONNECTED) ||
-		 (!locked && read_seqretry(&rename_lock, seq))) {
-		spin_unlock(&new->d_lock);
-		new = NULL;
-	}
-	rcu_read_unlock();
-	return new;
-}
-
-
-/*
  * Search for at least 1 mount point in the dentry's subdirs.
  * We descend to the next level whenever the d_subdirs
  * list is non-empty and continue searching.
  */
- 
+static struct dentry *try_to_ascend(struct dentry *old, int locked, unsigned seq)
+{
+        struct dentry *new = old->d_parent;
+
+        rcu_read_lock();
+        spin_unlock(&old->d_lock);
+        spin_lock(&new->d_lock);
+
+        /*
+         * might go back up the wrong parent if we have had a rename
+         * or deletion
+         */
+        if (new != old->d_parent ||
+                 (old->d_flags & DCACHE_DENTRY_KILLED) ||
+                 (!locked && read_seqretry(&rename_lock, seq))) {
+                spin_unlock(&new->d_lock);
+                new = NULL;
+        }
+        rcu_read_unlock();
+        return new;
+}
 /**
  * have_submounts - check for mounts over a dentry
  * @parent: dentry to check.
@@ -2510,6 +2501,8 @@ static int prepend_path(const struct path *path,
 	struct dentry *dentry = path->dentry;
 	struct vfsmount *vfsmnt = path->mnt;
 	struct mount *mnt = real_mount(vfsmnt);
+	char *orig_buffer = *buffer;
+	int orig_len = *buflen;
 	bool slash = false;
 	int error = 0;
 
@@ -2517,6 +2510,14 @@ static int prepend_path(const struct path *path,
 		struct dentry * parent;
 
 		if (dentry == vfsmnt->mnt_root || IS_ROOT(dentry)) {
+			/* Escaped? */
+			if (dentry != vfsmnt->mnt_root) {
+				*buffer = orig_buffer;
+				*buflen = orig_len;
+				slash = false;
+				error = 3;
+				goto global_root;
+			}
 			/* Global root? */
 			if (!mnt_has_parent(mnt))
 				goto global_root;

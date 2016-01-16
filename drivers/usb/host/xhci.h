@@ -1,3 +1,4 @@
+
 /*
  * xHCI host controller driver
  *
@@ -58,7 +59,7 @@ struct xhci_cap_regs {
 
 #define HCS_IST(p)		(((p) >> 0) & 0xf)
 #define HCS_ERST_MAX(p)		(((p) >> 4) & 0xf)
-#define HCS_MAX_SCRATCHPAD(p)   (((p) >> 27) & 0x1f)
+#define HCS_MAX_SCRATCHPAD(p)   ((((p) >> 16) & 0x3e0) | (((p) >> 27) & 0x1f))
 
 #define HCS_U1_LATENCY(p)	(((p) >> 0) & 0xff)
 #define HCS_U2_LATENCY(p)	(((p) >> 16) & 0xffff)
@@ -701,7 +702,7 @@ union xhci_trb {
 #define NEC_FW_MINOR(p)		(((p) >> 0) & 0xff)
 #define NEC_FW_MAJOR(p)		(((p) >> 8) & 0xff)
 
-#define TRBS_PER_SEGMENT	64
+#define TRBS_PER_SEGMENT	256
 #define MAX_RSVD_CMD_TRBS	(TRBS_PER_SEGMENT - 3)
 #define SEGMENT_SIZE		(TRBS_PER_SEGMENT*16)
 #define SEGMENT_SHIFT		(__ffs(SEGMENT_SIZE))
@@ -722,6 +723,8 @@ struct xhci_td {
 	struct xhci_segment	*start_seg;
 	union xhci_trb		*first_trb;
 	union xhci_trb		*last_trb;
+	/* actual_length of the URB has already been set */
+	bool			urb_length_set;
 };
 
 #define XHCI_CMD_DEFAULT_TIMEOUT	(5 * HZ)
@@ -943,6 +946,7 @@ struct xhci_hcd {
 #define XHCI_PLAT		(1 << 16)
 #define XHCI_SLOW_SUSPEND	(1 << 17)
 #define XHCI_SPURIOUS_WAKEUP	(1 << 18)
+#define XHCI_PME_STUCK_QUIRK	(1 << 20)
 #define XHCI_PORTSC_DELAY	(1 << 10)
 #define XHCI_RESET_DELAY	(1 << 11)
 	unsigned int		num_active_eps;
@@ -1161,7 +1165,7 @@ void xhci_shutdown(struct usb_hcd *hcd);
 int xhci_gen_setup(struct usb_hcd *hcd, xhci_get_quirks_t get_quirks);
 
 #ifdef	CONFIG_PM
-int xhci_suspend(struct xhci_hcd *xhci);
+int xhci_suspend(struct xhci_hcd *xhci, bool do_wakeup);
 int xhci_resume(struct xhci_hcd *xhci, bool hibernated);
 #else
 #define	xhci_suspend	NULL

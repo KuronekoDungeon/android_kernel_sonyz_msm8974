@@ -52,11 +52,7 @@
          for (i = 0, bvl = (bio)->bi_io_vec; i < (bio)->bi_vcnt; i++, bvl++)
 #define barrier_data(ptr) __asm__ __volatile__("": :"r"(ptr) :"memory")
              
-static void memzero_explicit(void *s, size_t count)
- {
-         memset(s, 0, count);
-         barrier_data(s);
- }
+
 /* Encryption added and removed here! (L: */
 
 static unsigned int num_prealloc_crypto_pages = 32;

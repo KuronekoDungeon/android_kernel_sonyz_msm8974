@@ -32,11 +32,7 @@ static void derive_crypt_complete(struct crypto_async_request *req, int rc)
 	ecr->res = rc;
 	complete(&ecr->completion);
 }
-static void memzero_explicit(void *s, size_t count)
- {
-         memset(s, 0, count);
-         barrier_data(s);
- }
+
 /**
  * f2fs_derive_key_aes() - Derive a key using AES-128-ECB
  * @deriving_key: Encryption key used for derivatio.
