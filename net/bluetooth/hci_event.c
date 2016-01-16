@@ -3332,7 +3332,7 @@ static inline void hci_le_ltk_request_evt(struct hci_dev *hdev,
 	conn->pin_length = ltk->pin_len;
 
 	hci_send_cmd(hdev, HCI_OP_LE_LTK_REPLY, sizeof(cp), &cp);
-
+	
 	hci_dev_unlock(hdev);
 
 	return;

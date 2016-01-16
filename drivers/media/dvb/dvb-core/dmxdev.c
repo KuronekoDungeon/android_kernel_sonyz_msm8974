@@ -2380,7 +2380,8 @@ static int dvb_dmxdev_get_event(struct dmxdev_filter *dmxdevfilter,
 		 * driver that data was flushed from output buffer.
 		 */
 		flush_len = dvb_ringbuffer_avail(&dmxdevfilter->buffer);
-		dvb_ringbuffer_flush(&dmxdevfilter->buffer);
+		//FIXME
+                //dvb_ringbuffer_flush(&dmxdevfilter->buffer);
 		dvb_dmxdev_notify_data_read(dmxdevfilter, flush_len);
 		dmxdevfilter->buffer.error = 0;
 	} else if (event->type == DMX_EVENT_SECTION_TIMEOUT) {

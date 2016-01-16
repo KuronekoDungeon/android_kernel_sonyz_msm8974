@@ -941,6 +941,8 @@ struct xhci_hcd {
 #define XHCI_COMP_MODE_QUIRK	(1 << 14)
 #define XHCI_AVOID_BEI		(1 << 15)
 #define XHCI_PLAT		(1 << 16)
+#define XHCI_SLOW_SUSPEND	(1 << 17)
+#define XHCI_SPURIOUS_WAKEUP	(1 << 18)
 #define XHCI_PORTSC_DELAY	(1 << 10)
 #define XHCI_RESET_DELAY	(1 << 11)
 	unsigned int		num_active_eps;
