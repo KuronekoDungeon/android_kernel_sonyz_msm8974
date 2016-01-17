@@ -65,6 +65,7 @@ size_t strlen(const char *s)
 	return sc - s;
 }
 
+#ifndef __HAVE_ARCH_MEMCMP
 int memcmp(const void *cs, const void *ct, size_t count)
 {
 	const unsigned char *su1 = cs, *su2 = ct, *end = su1 + count;
@@ -77,6 +78,7 @@ int memcmp(const void *cs, const void *ct, size_t count)
 	}
 	return res;
 }
+#endif
 
 int strcmp(const char *cs, const char *ct)
 {

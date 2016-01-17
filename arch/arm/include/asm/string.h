@@ -26,16 +26,19 @@ extern void * memset(void *, int, __kernel_size_t);
 
 extern void __memzero(void *ptr, __kernel_size_t n);
 
-#define memset(p,v,n)							\
-	({								\
-	 	void *__p = (p); size_t __n = n;			\
-		if ((__n) != 0) {					\
-			if (__builtin_constant_p((v)) && (v) == 0)	\
-				__memzero((__p),(__n));			\
-			else						\
-				memset((__p),(v),(__n));		\
-		}							\
-		(__p);							\
-	})
+#define memset(p,v,n)						\
+({								\
+	void *__p = (p); size_t __n = n;			\
+	if ((__n) != 0) {					\
+		if (__builtin_constant_p((v)) && (v) == 0)	\
+			__memzero((__p),(__n));			\
+		else						\
+			memset((__p),(v),(__n));		\
+	}							\
+	(__p);							\
+})
 
+#define __HAVE_ARCH_MEMCMP
+#define memcmp(src1, src2, len) __builtin_memcmp((src1), (src2), (len))
+        
 #endif
