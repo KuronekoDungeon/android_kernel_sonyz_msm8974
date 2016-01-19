@@ -229,6 +229,8 @@ source "fs/exofs/Kconfig"
 source "fs/exfat/Kconfig"
 #add f2fs
 source "fs/f2fs/Kconfig"
+#add sdcardfs
+source "fs/sdcardfs/Kconfig"
 
 endif # MISC_FILESYSTEMS
 

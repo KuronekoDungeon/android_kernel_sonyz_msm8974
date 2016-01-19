@@ -1291,7 +1291,7 @@ struct dentry *__d_alloc(struct super_block *sb, const struct qstr *name)
 
 	return dentry;
 }
-
+EXPORT_SYMBOL(__d_alloc);
 /**
  * d_alloc	-	allocate a dcache entry
  * @parent: parent of entry to allocate
