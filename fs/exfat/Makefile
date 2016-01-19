@@ -11,6 +11,8 @@ ifeq ($(CONFIG_MACH_SONY_HONAMI_ROW),y)
 	MODULE_NAME = texfat
 else ifeq ($(CONFIG_MACH_SONY_AMAMI_ROW),y)
 	MODULE_NAME = texfat
+else
+	EXTRA_CFLAGS += -DSUPER_EXFAT
 endif
 #end define
 
