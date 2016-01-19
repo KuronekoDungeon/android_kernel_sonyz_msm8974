@@ -2533,10 +2533,11 @@ static void exfat_debug_kill_sb(struct super_block *sb)
 
 static struct file_system_type exfat_fs_type = {
 	.owner       = THIS_MODULE,
-#if defined(CONFIG_MACH_SONY_HONAMI_ROW) || defined(CONFIG_MACH_SONY_AMAMI_ROW)
-	.name        = "texfat",
-#else
+//#if defined(CONFIG_MACH_SONY_HONAMI_ROW) || defined(CONFIG_MACH_SONY_AMAMI_ROW)
+#ifdef SUPER_EXFAT
 	.name        = "exfat",
+#else
+	.name        = "texfat",
 #endif
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,37)
 	.get_sb      = exfat_get_sb,
