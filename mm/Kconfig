@@ -456,3 +456,7 @@ config ZSMALLOC
 	  non-standard allocator interface where a handle, not a pointer, is
 	  returned by an alloc().  This handle must be mapped in order to
 	  access the allocated space.
+	  
+config FADV_NOACTIVE
+	bool "fadvise noactive option support"
+	default n
