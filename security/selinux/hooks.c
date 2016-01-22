@@ -422,8 +422,14 @@ static int sb_finish_set_opts(struct super_block *sb)
 	/* Special handling for sysfs. Is genfs but also has setxattr handler*/
 	if (strncmp(sb->s_type->name, "sysfs", sizeof("sysfs")) == 0)
 		sbsec->flags |= SE_SBLABELSUPP;
-
-	/* Initialize the root inode. */
+        
+        if (strncmp(sb->s_type->name, "f2fs", sizeof("f2fs")) == 0)
+ 		sbsec->flags |= SE_SBLABELSUPP;        
+	
+        if (strncmp(sb->s_type->name, "sdcardfs", sizeof("sdcardfs")) == 0)
+		sbsec->flags |= SE_SBLABELSUPP;
+             
+        /* Initialize the root inode. */
 	rc = inode_doinit_with_dentry(root_inode, root);
 
 	/* Initialize any other inodes associated with the superblock, e.g.
