@@ -6,13 +6,10 @@ ifneq ($(KERNELRELEASE),)
 # call from kernel build system
 
 #define module name
-MODULE_NAME = exfat
-ifeq ($(CONFIG_MACH_SONY_HONAMI_ROW),y)
-	MODULE_NAME = texfat
-else ifeq ($(CONFIG_MACH_SONY_AMAMI_ROW),y)
+ifeq ($(CONFIG_EXFAT_FAKE_TEXFAT),y)
 	MODULE_NAME = texfat
 else
-	EXTRA_CFLAGS += -DSUPER_EXFAT
+	MODULE_NAME = exfat
 endif
 #end define
 
