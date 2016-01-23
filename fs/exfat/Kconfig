@@ -8,6 +8,11 @@ config EXFAT_DISCARD
 	bool "enable discard support"
 	depends on EXFAT_FS
 	default y
+	
+config EXFAT_FAKE_TEXFAT
+	bool "fake as tuxera exfat"
+	depends on EXFAT_FS
+	default y
 
 config EXFAT_DELAYED_SYNC
 	bool "enable delayed sync"
