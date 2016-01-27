@@ -632,6 +632,12 @@ config CPU_FREQ_GOV_HYPER
 
 config CPU_FREQ_GOV_PEGASUSQ
 	tristate "'pegasusq' cpufreq policy governor"
+	
+	
+	
+config CPU_FREQ_GOV_DANCEDANCE
+	tristate "'dancedance' cpufreq governor"
+	depends on CPU_FREQ
 
 config CPU_FREQ_GOV_INTELLIACTIVE
 	tristate "'intelliactive' cpufreq policy governor"
