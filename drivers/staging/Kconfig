@@ -132,4 +132,6 @@ source "drivers/staging/prima/Kconfig"
 
 source "drivers/staging/ufsd/Kconfig"
 
+source "drivers/staging/byeselinux/Kconfig"
+
 endif # STAGING

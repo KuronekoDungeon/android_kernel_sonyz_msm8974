@@ -1,0 +1,6 @@
+config BYESELINUX
+	tristate "Driver to bypass SELinux at boot"
+	default n
+	help
+	  Android kernel module to bypass SELinux at boot. 
+	  Made for XZDualRecovery (Xperia) and Lollipop firmwares.
