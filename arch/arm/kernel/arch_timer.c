@@ -310,15 +310,11 @@ static inline cycle_t notrace counter_get_cntpct_mem(void)
 
 static inline cycle_t notrace counter_get_cntpct_cp15(void)
 {
-	//u32 cvall, cvalh;
+	u32 cvall, cvalh;
 
-	//asm volatile("mrrc p15, 0, %0, %1, c14" : "=r" (cvall), "=r" (cvalh));
-	//return ((cycle_t) cvalh << 32) | cvall;
+	asm volatile("mrrc p15, 0, %0, %1, c14" : "=r" (cvall), "=r" (cvalh));
+	return ((cycle_t) cvalh << 32) | cvall;
 	
-	cycle_t cval = 0;
-	isb();
-	asm volatile("mrrc p15, 0, %Q0, %R0, c14" : "=r" (cval));
-	return cval;
 }
 
 static inline cycle_t notrace counter_get_cntvct_mem(void)
@@ -336,15 +332,11 @@ static inline cycle_t notrace counter_get_cntvct_mem(void)
 
 static inline cycle_t notrace counter_get_cntvct_cp15(void)
 {
-	//u32 cvall, cvalh;
+	u32 cvall, cvalh;
 
-	//asm volatile("mrrc p15, 1, %0, %1, c14" : "=r" (cvall), "=r" (cvalh));
-	//return ((cycle_t) cvalh << 32) | cvall;
+	asm volatile("mrrc p15, 1, %0, %1, c14" : "=r" (cvall), "=r" (cvalh));
+	return ((cycle_t) cvalh << 32) | cvall;
 	
-	cycle_t cval = 0;
-	isb();
-	asm volatile("mrrc p15, 1, %Q0, %R0, c14" : "=r" (cval));
-	return cval;
 }
 
 static cycle_t (*get_cntpct_func)(void) = counter_get_cntpct_cp15;
