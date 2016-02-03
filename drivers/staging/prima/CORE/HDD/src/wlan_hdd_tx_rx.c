@@ -66,7 +66,7 @@
 #ifdef DEBUG_ROAM_DELAY
 #include "vos_utils.h"
 #endif
-#include  "sapInternal.h"
+
 /*--------------------------------------------------------------------------- 
   Preprocessor definitions and constants
   -------------------------------------------------------------------------*/ 
@@ -1668,17 +1668,9 @@ VOS_STATUS hdd_tx_fetch_packet_cbk( v_VOID_t *vosContext,
    {
       /* 1. Check if ACM is set for this AC 
        * 2. If set, check if this AC had already admitted 
-       * 3. If not already admitted, downgrade the UP to next best UP
-       * 4. Allow only when medium time is non zero when Addts accepted else downgrade traffic.
-            we opted downgrading over Delts when medium time is zero because while doing downgradig
-            driver is not clearing the wmm context so consider in subsequent roaming if AP (new or
-            same AP) accept the Addts with valid medium time no application support is required
-            where if we have opted delts Applications have to again do Addts or STA will never
-            go for Addts.*/
-
+       * 3. If not already admitted, downgrade the UP to next best UP */
       if(!pAdapter->hddWmmStatus.wmmAcStatus[ac].wmmAcAccessRequired ||
-         (pAdapter->hddWmmStatus.wmmAcStatus[ac].wmmAcTspecValid &&
-          pAdapter->hddWmmStatus.wmmAcStatus[ac].wmmAcTspecInfo.medium_time))
+         pAdapter->hddWmmStatus.wmmAcStatus[ac].wmmAcTspecValid)
       {
         pPktMetaInfo->ucUP = pktNode->userPriority;
         pPktMetaInfo->ucTID = pPktMetaInfo->ucUP;
@@ -2115,18 +2107,11 @@ void hdd_tx_rx_pkt_cnt_stat_timer_handler( void *phddctx)
             else if ((WLAN_HDD_SOFTAP == pAdapter->device_mode) ||
                      (WLAN_HDD_P2P_GO == pAdapter->device_mode))
             {
-                v_CONTEXT_t pVosContext = ( WLAN_HDD_GET_CTX(pAdapter))->pvosContext;
-                ptSapContext pSapCtx = VOS_GET_SAP_CB(pVosContext);
-                if(pSapCtx == NULL){
-                    VOS_TRACE(VOS_MODULE_ID_HDD_DATA, VOS_TRACE_LEVEL_ERROR,
-                             FL("psapCtx is NULL"));
-                    return;
-                }
                 for (staId = 0; staId < WLAN_MAX_STA_COUNT; staId++)
                 {
-                    if ((pSapCtx->aStaInfo[staId].isUsed) &&
+                    if ((pAdapter->aStaInfo[staId].isUsed) &&
                         (WLANTL_STA_AUTHENTICATED ==
-                                          pSapCtx->aStaInfo[staId].tlSTAState))
+                                          pAdapter->aStaInfo[staId].tlSTAState))
                     {
                         fconnected = TRUE;
                     }
