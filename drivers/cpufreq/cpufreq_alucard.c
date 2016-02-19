@@ -53,6 +53,7 @@
 /* Pump Inc/Dec for all cores */
 #define PUMP_INC_STEP_AT_MIN_FREQ	2
 #define PUMP_INC_STEP			2
+#define PUMP_DEC_STEP_AT_MIN_FREQ	2
 #define PUMP_DEC_STEP			1
 
 /* sample rate */
@@ -70,6 +71,7 @@ struct cpufreq_alucard_cpuinfo {
 	int pump_inc_step;
 	int pump_inc_step_at_min_freq;
 	int pump_dec_step;
+	int pump_dec_step_at_min_freq;
 	bool governor_enabled;
 	unsigned int up_rate;
 	unsigned int down_rate;
@@ -151,6 +153,10 @@ show_pcpu_param(pump_inc_step, 1);
 show_pcpu_param(pump_inc_step, 2);
 show_pcpu_param(pump_inc_step, 3);
 show_pcpu_param(pump_inc_step, 4);
+show_pcpu_param(pump_dec_step_at_min_freq, 1);
+show_pcpu_param(pump_dec_step_at_min_freq, 2);
+show_pcpu_param(pump_dec_step_at_min_freq, 3);
+show_pcpu_param(pump_dec_step_at_min_freq, 4);
 show_pcpu_param(pump_dec_step, 1);
 show_pcpu_param(pump_dec_step, 2);
 show_pcpu_param(pump_dec_step, 3);
@@ -213,6 +219,10 @@ store_pcpu_pump_param(pump_inc_step, 1);
 store_pcpu_pump_param(pump_inc_step, 2);
 store_pcpu_pump_param(pump_inc_step, 3);
 store_pcpu_pump_param(pump_inc_step, 4);
+store_pcpu_pump_param(pump_dec_step_at_min_freq, 1);
+store_pcpu_pump_param(pump_dec_step_at_min_freq, 2);
+store_pcpu_pump_param(pump_dec_step_at_min_freq, 3);
+store_pcpu_pump_param(pump_dec_step_at_min_freq, 4);
 store_pcpu_pump_param(pump_dec_step, 1);
 store_pcpu_pump_param(pump_dec_step, 2);
 store_pcpu_pump_param(pump_dec_step, 3);
@@ -226,6 +236,10 @@ define_one_global_rw(pump_inc_step_1);
 define_one_global_rw(pump_inc_step_2);
 define_one_global_rw(pump_inc_step_3);
 define_one_global_rw(pump_inc_step_4);
+define_one_global_rw(pump_dec_step_at_min_freq_1);
+define_one_global_rw(pump_dec_step_at_min_freq_2);
+define_one_global_rw(pump_dec_step_at_min_freq_3);
+define_one_global_rw(pump_dec_step_at_min_freq_4);
 define_one_global_rw(pump_dec_step_1);
 define_one_global_rw(pump_dec_step_2);
 define_one_global_rw(pump_dec_step_3);
@@ -457,6 +471,10 @@ static struct attribute *alucard_attributes[] = {
 	&pump_inc_step_2.attr,
 	&pump_inc_step_3.attr,
 	&pump_inc_step_4.attr,
+	&pump_dec_step_at_min_freq_1.attr,
+	&pump_dec_step_at_min_freq_2.attr,
+	&pump_dec_step_at_min_freq_3.attr,
+	&pump_dec_step_at_min_freq_4.attr,
 	&pump_dec_step_1.attr,
 	&pump_dec_step_2.attr,
 	&pump_dec_step_3.attr,
@@ -521,7 +539,8 @@ static void alucard_check_cpu(struct cpufreq_alucard_cpuinfo *this_alucard_cpuin
 	int inc_cpu_load = alucard_tuners_ins.inc_cpu_load;
 	int pump_inc_step = this_alucard_cpuinfo->pump_inc_step;
 	int pump_dec_step = this_alucard_cpuinfo->pump_dec_step;
-	unsigned int max_load = 0;
+	unsigned int cur_load = 0;
+	unsigned int max_load_freq = 0;
 	int io_busy = alucard_tuners_ins.io_is_busy;
 	unsigned int cpus_up_rate = alucard_tuners_ins.cpus_up_rate;
 	unsigned int cpus_down_rate = alucard_tuners_ins.cpus_down_rate;
@@ -542,7 +561,8 @@ static void alucard_check_cpu(struct cpufreq_alucard_cpuinfo *this_alucard_cpuin
 		struct cpufreq_alucard_cpuinfo *j_alucard_cpuinfo;
 		u64 cur_wall_time, cur_idle_time;
 		unsigned int idle_time, wall_time;
-		unsigned int load;
+		unsigned int load_freq;
+		int freq_avg;
 		
 		j_alucard_cpuinfo = &per_cpu(od_alucard_cpuinfo, j);
 
@@ -564,22 +584,32 @@ static void alucard_check_cpu(struct cpufreq_alucard_cpuinfo *this_alucard_cpuin
 		if (unlikely(!wall_time || wall_time < idle_time))
 			continue;
 
-		load = 100 * (wall_time - idle_time) / wall_time;
+		cur_load = 100 * (wall_time - idle_time) / wall_time;
 
-		if (load > max_load)
-			max_load = load;
+		freq_avg = __cpufreq_driver_getavg(policy, j);
+		if (freq_avg <= 0)
+			freq_avg = policy->cur;
+
+		load_freq = cur_load * freq_avg;
+		if (load_freq > max_load_freq)
+			max_load_freq = load_freq;
 	}
 
-	cpufreq_notify_utilization(policy, max_load);
+	cpufreq_notify_utilization(policy, cur_load);
 
 	/* CPUs Online Scale Frequency*/
 	if (policy->cur < freq_responsiveness) {
 		inc_cpu_load = alucard_tuners_ins.inc_cpu_load_at_min_freq;
 		dec_cpu_load = alucard_tuners_ins.dec_cpu_load_at_min_freq;
 		pump_inc_step = this_alucard_cpuinfo->pump_inc_step_at_min_freq;
+		pump_dec_step = this_alucard_cpuinfo->pump_dec_step_at_min_freq;
 	}
+	/* check if policy is valid */
+	if (!policy)
+		return;
 	/* Check for frequency increase or for frequency decrease */
-	if (max_load >= inc_cpu_load && index < this_alucard_cpuinfo->max_index) {
+if (max_load_freq >= (inc_cpu_load * policy->cur) 
+	   && index < this_alucard_cpuinfo->max_index) {
 		if (this_alucard_cpuinfo->up_rate % cpus_up_rate == 0) {
 			if ((index + pump_inc_step) <= this_alucard_cpuinfo->max_index)
 				index += pump_inc_step;
@@ -594,7 +624,8 @@ static void alucard_check_cpu(struct cpufreq_alucard_cpuinfo *this_alucard_cpuin
 			else
 				this_alucard_cpuinfo->up_rate = 1;
 		}
-	} else if (max_load < dec_cpu_load && index > this_alucard_cpuinfo->min_index) {
+	} else if (max_load_freq < (dec_cpu_load * policy->cur)
+				 && index > this_alucard_cpuinfo->min_index) {
 		if (this_alucard_cpuinfo->down_rate % cpus_down_rate == 0) {
 			if ((index - this_alucard_cpuinfo->min_index) >= pump_dec_step)
 				index -= pump_dec_step;
@@ -609,7 +640,10 @@ static void alucard_check_cpu(struct cpufreq_alucard_cpuinfo *this_alucard_cpuin
 			else
 				this_alucard_cpuinfo->down_rate = 1;
 		}
-	}
+	} else {
+		this_alucard_cpuinfo->up_rate = 1;
+		this_alucard_cpuinfo->down_rate = 1;
+        }
 
 	if (this_alucard_cpuinfo->freq_table[index].frequency != policy->cur) {
 		__cpufreq_driver_target(policy, this_alucard_cpuinfo->freq_table[index].frequency, CPUFREQ_RELATION_L);
@@ -757,6 +791,7 @@ static int __init cpufreq_gov_alucard_init(void)
 		this_alucard_cpuinfo->pump_inc_step_at_min_freq = PUMP_INC_STEP_AT_MIN_FREQ;
 		this_alucard_cpuinfo->pump_inc_step = PUMP_INC_STEP;
 		this_alucard_cpuinfo->pump_dec_step = PUMP_DEC_STEP;
+		this_alucard_cpuinfo->pump_dec_step_at_min_freq = PUMP_DEC_STEP_AT_MIN_FREQ;
 	}
 
 	return cpufreq_register_governor(&cpufreq_gov_alucard);
